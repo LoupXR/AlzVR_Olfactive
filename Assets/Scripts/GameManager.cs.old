@@ -1,0 +1,106 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using TMPro;
+
+public class GameManager : MonoBehaviour
+{
+    public static GameManager Instance{get; private set;}
+
+    public Fire fire;
+    public AudioSource smokeDetector;
+    public List<TidyingTask> tidyingTasks;
+
+    public delegate void GameEvent();
+    public GameEvent stopFire;
+    private bool victory;
+    public bool conditionsForFireMet{get;set;}
+
+    private float timeBeginning;
+    private float timeFireBeginning;
+    private float timeEnd;
+    public GameObject endCanvas;
+    public TextMeshProUGUI timeText;
+    public TextMeshProUGUI timeToStopFireText;
+
+
+    void Awake()
+    {
+        if (Instance == null) Instance = this;
+        else Destroy(this);
+        DontDestroyOnLoad(gameObject);
+    }
+
+
+    // Start is called before the first frame update
+    void Start()
+    {
+        //DebugConsole.CreateConsole();
+        StartCoroutine(Scenario());
+        StartCoroutine(ManageFire());
+        timeBeginning = Time.time;
+    }
+
+
+    IEnumerator ManageFire()
+    {
+        yield return new WaitUntil(() => conditionsForFireMet);
+        bool startFire = false;
+        float timeConditionsMet = Time.time;
+        while(!startFire)
+        {
+            if(!conditionsForFireMet)
+            {
+                yield return new WaitUntil(() => conditionsForFireMet);
+                timeConditionsMet = Time.time;
+            }
+            else if(Time.time - timeConditionsMet >= 20)
+            {
+                startFire = true;
+            }
+            yield return null;
+        }
+        fire.StartFire();
+        timeFireBeginning = Time.time;
+        yield return new WaitForSeconds(5);
+        smokeDetector.Play();
+        yield return new WaitUntil(()=>victory);
+        stopFire.Invoke();
+    }
+
+    IEnumerator Scenario()
+    {
+        foreach(TidyingTask task in tidyingTasks)
+        {
+            task.StartTask();
+        }
+        bool tasksComplete = false;
+        while(!tasksComplete)
+        {
+            tasksComplete = true;
+            foreach(TidyingTask task in tidyingTasks)
+            {
+                if(!task.complete)
+                {
+                    tasksComplete = false;
+                    break;
+                }
+            }
+            yield return null;
+        }
+        foreach(TidyingTask task in tidyingTasks)
+        {
+            task.loopTask = false;
+        }
+    }
+
+    public void Victory()
+    {
+        victory = true;
+        smokeDetector.Pause();
+        timeEnd = Time.time;
+        timeText.text = (timeEnd - timeBeginning).ToString("0.00") + " sec";
+        timeToStopFireText.text = (timeEnd - timeFireBeginning).ToString("0.00") + " sec";
+        endCanvas.SetActive(true);
+    }
+}
