@@ -44,7 +44,7 @@ public class GameManager : MonoBehaviour {
     // [Range(2,9)]
     
     [Header("Control bools")]
-    [SerializeField] private bool showTutorial = true;
+    [SerializeField] private bool showTutorial = false;
     [SerializeField] private bool showGuidedScene = false;
     [SerializeField] private bool showDistractionScene = false;
     [SerializeField] private bool showUnguidedScene = false;
@@ -116,7 +116,6 @@ public class GameManager : MonoBehaviour {
           he is then asked to put a red mug on a red plate
         */
         
-        showTutorial = true;
         if (!HasCompletedTutorial && showTutorial) StartCoroutine(ScenarioStarter(tutorialTasks, tutorialGameObject, isDebugging));
 
         // Congratulations();

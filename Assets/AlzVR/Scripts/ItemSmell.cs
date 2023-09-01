@@ -3,7 +3,7 @@ using Olfy;
 
 public class ItemSmell : MonoBehaviour {
     [Header("Game prerequisites")]
-    [SerializeField] private CharacterController _player;
+    [SerializeField] private GameObject _player;
 
     [Header("Olfy setup")]
     [SerializeField] private string _channel = "1";
@@ -12,8 +12,9 @@ public class ItemSmell : MonoBehaviour {
     [SerializeField] private int _frequency = 110000;
     
     private void OnTriggerEnter(Collider other) {
-        if (other == _player) {
+        Debug.Log("Smell sent by " + gameObject.name + " to Olfy with parameters: {duration: " + _durationInSeconds + "secs, intensity: " +
+                  _intensity + ", frequency: " + _frequency + "} on channel " + _channel);
             OlfyManager.Instance.SendSmellToOlfy((int)_durationInSeconds * 1000, _channel, _intensity, _frequency, false);
-        }
+            if (other == _player.GetComponent<Collider>()) {Debug.Log("Collision registered by player");}
     }
 }
